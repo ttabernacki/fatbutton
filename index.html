@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAT</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: Impact, 'Arial Black', sans-serif;
+      overflow: hidden;
+    }
+
+    #btn {
+      background: #ff2200;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 260px;
+      height: 260px;
+      font-size: 72px;
+      letter-spacing: 6px;
+      cursor: pointer;
+      box-shadow: 0 0 40px #ff2200aa, 0 8px 32px #000;
+      transition: transform 0.08s, box-shadow 0.08s;
+      user-select: none;
+    }
+
+    #btn:hover {
+      box-shadow: 0 0 70px #ff2200cc, 0 8px 32px #000;
+    }
+
+    #btn:active, #btn.screaming {
+      transform: scale(0.92);
+      box-shadow: 0 0 100px #ff4400ff, 0 2px 12px #000;
+    }
+  </style>
+</head>
+<body>
+  <button id="btn">FAT</button>
+  <script>
+    const btn = document.getElementById('btn');
+
+    btn.addEventListener('click', () => {
+      window.speechSynthesis.cancel();
+
+      const u = new SpeechSynthesisUtterance('FAT');
+      u.volume = 1;
+      u.rate = 0.6;
+      u.pitch = 0.1;
+
+      btn.classList.add('screaming');
+      u.onend = () => btn.classList.remove('screaming');
+
+      window.speechSynthesis.speak(u);
+    });
+  </script>
+</body>
+</html>
