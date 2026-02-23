@@ -26,7 +26,7 @@
 
     .buttons-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 1.2rem;
       max-width: 900px;
       margin: 0 auto 3rem;
@@ -36,62 +36,78 @@
       background: #1a1a1a;
       border: 2px solid #333;
       border-radius: 16px;
-      padding: 1.5rem 1rem;
+      padding: 1.25rem 1rem 1rem;
       text-align: center;
-      cursor: pointer;
-      transition: transform 0.08s, border-color 0.2s, background 0.2s;
       user-select: none;
-    }
-
-    .btn-card:hover {
-      border-color: #555;
-      background: #222;
-    }
-
-    .btn-card:active {
-      transform: scale(0.95);
     }
 
     .btn-card.flash {
       border-color: #7c3aed;
       background: #2d1b69;
+      transition: border-color 0.05s, background 0.05s;
     }
 
-    .btn-label {
-      font-size: 1.1rem;
+    .btn-name {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #a78bfa;
+      margin-bottom: 0.25rem;
+    }
+
+    .btn-quote {
+      font-size: 0.95rem;
       font-weight: 600;
-      margin-bottom: 0.5rem;
-      min-height: 1.4em;
-      outline: none;
-      border-radius: 4px;
-      padding: 2px 4px;
-      color: #f0f0f0;
-    }
-
-    .btn-label[contenteditable="true"]:focus {
-      background: #333;
-      box-shadow: 0 0 0 2px #7c3aed;
-      cursor: text;
-    }
-
-    .btn-label.placeholder {
-      color: #555;
-      font-style: italic;
+      color: #ccc;
+      margin-bottom: 0.75rem;
+      line-height: 1.3;
     }
 
     .btn-count {
-      font-size: 2.5rem;
+      font-size: 2.8rem;
       font-weight: 800;
-      color: #a78bfa;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 0.75rem;
+    }
+
+    .btn-controls {
+      display: flex;
+      justify-content: center;
+      gap: 0.6rem;
+    }
+
+    .ctrl-btn {
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 50%;
+      border: 2px solid #444;
+      background: #111;
+      color: #f0f0f0;
+      font-size: 1.3rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.12s, border-color 0.12s, transform 0.08s;
       line-height: 1;
     }
 
-    .edit-hint {
-      font-size: 0.65rem;
-      color: #444;
-      margin-top: 0.4rem;
+    .ctrl-btn:hover {
+      border-color: #666;
+      background: #222;
     }
 
+    .ctrl-btn:active {
+      transform: scale(0.88);
+    }
+
+    .ctrl-btn.plus:hover  { border-color: #7c3aed; color: #a78bfa; }
+    .ctrl-btn.minus:hover { border-color: #555; color: #888; }
+
+    /* Leaderboard */
     .leaderboard {
       max-width: 500px;
       margin: 0 auto;
@@ -129,11 +145,8 @@
     .lb-rank.silver { color: #94a3b8; }
     .lb-rank.bronze { color: #b45309; }
 
-    .lb-name {
-      flex: 1;
-      font-size: 1rem;
-      font-weight: 600;
-    }
+    .lb-name { flex: 1; font-size: 0.95rem; font-weight: 600; }
+    .lb-name span { display: block; font-size: 0.75rem; color: #888; font-weight: 400; }
 
     .lb-count {
       font-size: 1.2rem;
@@ -170,35 +183,30 @@
 </div>
 
 <script>
-  const INITIAL_BUTTONS = [
-    { id: 'b1', label: 'My Knees Hurt', editable: false },
-    { id: 'b2', label: 'Shots',         editable: false },
-    { id: 'b3', label: '',              editable: true  },
-    { id: 'b4', label: '',              editable: true  },
-    { id: 'b5', label: '',              editable: true  },
-    { id: 'b6', label: '',              editable: true  },
+  const BUTTONS = [
+    { id: 'b1', name: 'Elad',    quote: "Let's Get Shots" },
+    { id: 'b2', name: 'Elliot',  quote: "My Knees Hurt" },
+    { id: 'b3', name: 'Kate',    quote: "We Gotta Lay Eyes" },
+    { id: 'b4', name: 'Katelyn', quote: "Should we get a bottle?" },
+    { id: 'b5', name: 'Matt',    quote: "And I've Always Said That" },
+    { id: 'b6', name: 'Tomasz',  quote: "Unsolicited Fun Fact" },
   ];
 
   function loadState() {
-    try { return JSON.parse(localStorage.getItem('btnCounterState')) || {}; }
+    try { return JSON.parse(localStorage.getItem('btnCounterState2')) || {}; }
     catch { return {}; }
   }
 
-  function saveState(state) {
-    localStorage.setItem('btnCounterState', JSON.stringify(state));
+  function saveState(s) {
+    localStorage.setItem('btnCounterState2', JSON.stringify(s));
   }
 
-  let saved = loadState();
-
-  const buttons = INITIAL_BUTTONS.map(b => ({
-    ...b,
-    label: saved[b.id]?.label ?? b.label,
-    count: saved[b.id]?.count ?? 0,
-  }));
+  const saved = loadState();
+  const buttons = BUTTONS.map(b => ({ ...b, count: saved[b.id] ?? 0 }));
 
   function persist() {
     const s = {};
-    buttons.forEach(b => { s[b.id] = { label: b.label, count: b.count }; });
+    buttons.forEach(b => { s[b.id] = b.count; });
     saveState(s);
   }
 
@@ -207,14 +215,13 @@
     const max = sorted[0]?.count || 1;
     const rankClass = ['gold', 'silver', 'bronze'];
     document.getElementById('leaderboard').innerHTML = sorted.map((b, i) => {
-      const name = b.label || `(unlabeled)`;
       const pct = max > 0 ? (b.count / max * 100).toFixed(1) : 0;
       return `
         <div class="lb-row">
           <div class="lb-rank ${rankClass[i] || ''}">${i + 1}</div>
           <div style="flex:1">
             <div style="display:flex;justify-content:space-between;align-items:center">
-              <span class="lb-name">${name}</span>
+              <div class="lb-name">${b.name}<span>${b.quote}</span></div>
               <span class="lb-count">${b.count.toLocaleString()}</span>
             </div>
             <div class="lb-bar-wrap"><div class="lb-bar" style="width:${pct}%"></div></div>
@@ -231,27 +238,35 @@
       const card = document.createElement('div');
       card.className = 'btn-card';
 
-      const label = document.createElement('div');
-      label.className = 'btn-label' + (b.label === '' ? ' placeholder' : '');
-      label.textContent = b.label || 'click to name';
-      if (b.editable) label.contentEditable = 'true';
+      const name = document.createElement('div');
+      name.className = 'btn-name';
+      name.textContent = b.name;
+
+      const quote = document.createElement('div');
+      quote.className = 'btn-quote';
+      quote.textContent = `"${b.quote}"`;
 
       const count = document.createElement('div');
       count.className = 'btn-count';
       count.textContent = b.count.toLocaleString();
 
-      card.appendChild(label);
-      card.appendChild(count);
+      const controls = document.createElement('div');
+      controls.className = 'btn-controls';
 
-      if (b.editable) {
-        const hint = document.createElement('div');
-        hint.className = 'edit-hint';
-        hint.textContent = 'click label to rename';
-        card.appendChild(hint);
-      }
+      const minus = document.createElement('button');
+      minus.className = 'ctrl-btn minus';
+      minus.textContent = '−';
+      minus.addEventListener('click', () => {
+        if (b.count > 0) b.count--;
+        count.textContent = b.count.toLocaleString();
+        persist();
+        renderLeaderboard();
+      });
 
-      card.addEventListener('click', e => {
-        if (document.activeElement === label) return;
+      const plus = document.createElement('button');
+      plus.className = 'ctrl-btn plus';
+      plus.textContent = '+';
+      plus.addEventListener('click', () => {
         b.count++;
         count.textContent = b.count.toLocaleString();
         card.classList.add('flash');
@@ -260,31 +275,13 @@
         renderLeaderboard();
       });
 
-      if (b.editable) {
-        label.addEventListener('focus', () => {
-          if (label.classList.contains('placeholder')) {
-            label.textContent = '';
-            label.classList.remove('placeholder');
-          }
-        });
+      controls.appendChild(minus);
+      controls.appendChild(plus);
 
-        label.addEventListener('blur', () => {
-          const newLabel = label.textContent.trim();
-          b.label = newLabel;
-          if (!newLabel) {
-            label.textContent = 'click to name';
-            label.classList.add('placeholder');
-          }
-          persist();
-          renderLeaderboard();
-        });
-
-        label.addEventListener('keydown', e => {
-          if (e.key === 'Enter') { e.preventDefault(); label.blur(); }
-        });
-
-        label.addEventListener('click', e => e.stopPropagation());
-      }
+      card.appendChild(name);
+      card.appendChild(quote);
+      card.appendChild(count);
+      card.appendChild(controls);
 
       grid.appendChild(card);
     });
