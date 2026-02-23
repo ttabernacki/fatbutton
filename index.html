@@ -3,64 +3,295 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FAT</title>
+  <title>Button Counter</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: #111;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #f0f0f0;
       min-height: 100vh;
-      font-family: Impact, 'Arial Black', sans-serif;
-      overflow: hidden;
+      padding: 2rem;
     }
 
-    #btn {
-      background: #ff2200;
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
       color: #fff;
-      border: none;
-      border-radius: 50%;
-      width: 260px;
-      height: 260px;
-      font-size: 72px;
-      letter-spacing: 6px;
+    }
+
+    .buttons-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.2rem;
+      max-width: 900px;
+      margin: 0 auto 3rem;
+    }
+
+    .btn-card {
+      background: #1a1a1a;
+      border: 2px solid #333;
+      border-radius: 16px;
+      padding: 1.5rem 1rem;
+      text-align: center;
       cursor: pointer;
-      box-shadow: 0 0 40px #ff2200aa, 0 8px 32px #000;
-      transition: transform 0.08s, box-shadow 0.08s;
+      transition: transform 0.08s, border-color 0.2s, background 0.2s;
       user-select: none;
     }
 
-    #btn:hover {
-      box-shadow: 0 0 70px #ff2200cc, 0 8px 32px #000;
+    .btn-card:hover {
+      border-color: #555;
+      background: #222;
     }
 
-    #btn:active, #btn.screaming {
-      transform: scale(0.92);
-      box-shadow: 0 0 100px #ff4400ff, 0 2px 12px #000;
+    .btn-card:active {
+      transform: scale(0.95);
+    }
+
+    .btn-card.flash {
+      border-color: #7c3aed;
+      background: #2d1b69;
+    }
+
+    .btn-label {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      min-height: 1.4em;
+      outline: none;
+      border-radius: 4px;
+      padding: 2px 4px;
+      color: #f0f0f0;
+    }
+
+    .btn-label[contenteditable="true"]:focus {
+      background: #333;
+      box-shadow: 0 0 0 2px #7c3aed;
+      cursor: text;
+    }
+
+    .btn-label.placeholder {
+      color: #555;
+      font-style: italic;
+    }
+
+    .btn-count {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #a78bfa;
+      line-height: 1;
+    }
+
+    .edit-hint {
+      font-size: 0.65rem;
+      color: #444;
+      margin-top: 0.4rem;
+    }
+
+    .leaderboard {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .leaderboard h2 {
+      text-align: center;
+      font-size: 1.3rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 1rem;
+    }
+
+    .lb-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      margin-bottom: 0.5rem;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+    }
+
+    .lb-rank {
+      font-size: 1.1rem;
+      font-weight: 800;
+      width: 2rem;
+      text-align: center;
+      color: #555;
+    }
+
+    .lb-rank.gold   { color: #fbbf24; }
+    .lb-rank.silver { color: #94a3b8; }
+    .lb-rank.bronze { color: #b45309; }
+
+    .lb-name {
+      flex: 1;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .lb-count {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #a78bfa;
+    }
+
+    .lb-bar-wrap {
+      width: 100%;
+      height: 4px;
+      background: #2a2a2a;
+      border-radius: 2px;
+      margin-top: 0.3rem;
+      overflow: hidden;
+    }
+
+    .lb-bar {
+      height: 100%;
+      background: #7c3aed;
+      border-radius: 2px;
+      transition: width 0.4s ease;
     }
   </style>
 </head>
 <body>
-  <button id="btn">FAT</button>
-  <script>
-    const btn = document.getElementById('btn');
 
-    btn.addEventListener('click', () => {
-      window.speechSynthesis.cancel();
+<h1>Button Counter</h1>
 
-      // pitch 2 = max (screechiest), rate 1.8 = fast & aggressive, volume 1 = max
-      const u = new SpeechSynthesisUtterance('FAAAAAT');
-      u.volume = 1;
-      u.rate = 1.3;
-      u.pitch = 2;
+<div class="buttons-grid" id="buttons-grid"></div>
 
-      btn.classList.add('screaming');
-      u.onend = () => btn.classList.remove('screaming');
+<div class="leaderboard">
+  <h2>Leaderboard</h2>
+  <div id="leaderboard"></div>
+</div>
 
-      window.speechSynthesis.speak(u);
+<script>
+  const INITIAL_BUTTONS = [
+    { id: 'b1', label: 'My Knees Hurt', editable: false },
+    { id: 'b2', label: 'Shots',         editable: false },
+    { id: 'b3', label: '',              editable: true  },
+    { id: 'b4', label: '',              editable: true  },
+    { id: 'b5', label: '',              editable: true  },
+    { id: 'b6', label: '',              editable: true  },
+  ];
+
+  function loadState() {
+    try { return JSON.parse(localStorage.getItem('btnCounterState')) || {}; }
+    catch { return {}; }
+  }
+
+  function saveState(state) {
+    localStorage.setItem('btnCounterState', JSON.stringify(state));
+  }
+
+  let saved = loadState();
+
+  const buttons = INITIAL_BUTTONS.map(b => ({
+    ...b,
+    label: saved[b.id]?.label ?? b.label,
+    count: saved[b.id]?.count ?? 0,
+  }));
+
+  function persist() {
+    const s = {};
+    buttons.forEach(b => { s[b.id] = { label: b.label, count: b.count }; });
+    saveState(s);
+  }
+
+  function renderLeaderboard() {
+    const sorted = [...buttons].sort((a, b) => b.count - a.count);
+    const max = sorted[0]?.count || 1;
+    const rankClass = ['gold', 'silver', 'bronze'];
+    document.getElementById('leaderboard').innerHTML = sorted.map((b, i) => {
+      const name = b.label || `(unlabeled)`;
+      const pct = max > 0 ? (b.count / max * 100).toFixed(1) : 0;
+      return `
+        <div class="lb-row">
+          <div class="lb-rank ${rankClass[i] || ''}">${i + 1}</div>
+          <div style="flex:1">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span class="lb-name">${name}</span>
+              <span class="lb-count">${b.count.toLocaleString()}</span>
+            </div>
+            <div class="lb-bar-wrap"><div class="lb-bar" style="width:${pct}%"></div></div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function buildButtons() {
+    const grid = document.getElementById('buttons-grid');
+    grid.innerHTML = '';
+
+    buttons.forEach(b => {
+      const card = document.createElement('div');
+      card.className = 'btn-card';
+
+      const label = document.createElement('div');
+      label.className = 'btn-label' + (b.label === '' ? ' placeholder' : '');
+      label.textContent = b.label || 'click to name';
+      if (b.editable) label.contentEditable = 'true';
+
+      const count = document.createElement('div');
+      count.className = 'btn-count';
+      count.textContent = b.count.toLocaleString();
+
+      card.appendChild(label);
+      card.appendChild(count);
+
+      if (b.editable) {
+        const hint = document.createElement('div');
+        hint.className = 'edit-hint';
+        hint.textContent = 'click label to rename';
+        card.appendChild(hint);
+      }
+
+      card.addEventListener('click', e => {
+        if (document.activeElement === label) return;
+        b.count++;
+        count.textContent = b.count.toLocaleString();
+        card.classList.add('flash');
+        setTimeout(() => card.classList.remove('flash'), 200);
+        persist();
+        renderLeaderboard();
+      });
+
+      if (b.editable) {
+        label.addEventListener('focus', () => {
+          if (label.classList.contains('placeholder')) {
+            label.textContent = '';
+            label.classList.remove('placeholder');
+          }
+        });
+
+        label.addEventListener('blur', () => {
+          const newLabel = label.textContent.trim();
+          b.label = newLabel;
+          if (!newLabel) {
+            label.textContent = 'click to name';
+            label.classList.add('placeholder');
+          }
+          persist();
+          renderLeaderboard();
+        });
+
+        label.addEventListener('keydown', e => {
+          if (e.key === 'Enter') { e.preventDefault(); label.blur(); }
+        });
+
+        label.addEventListener('click', e => e.stopPropagation());
+      }
+
+      grid.appendChild(card);
     });
-  </script>
+  }
+
+  buildButtons();
+  renderLeaderboard();
+</script>
 </body>
 </html>
